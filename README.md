@@ -1,14 +1,19 @@
-# ☕ Brew & Co — Order System
+# ☕ Brew & Co — Full-Stack Coffee Ordering Platform
 
-> A full-stack coffee shop ordering system. Customers order online, the owner sees everything live.
+> A production-ready coffee shop ordering system. Customers order online, the owner monitors and manages orders live.
 
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express-4.18-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Render-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Render](https://img.shields.io/badge/Deployed-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://render.com/)
 
-**[☕ Customer Page →](https://your-app.onrender.com)**  
-**[📊 Owner Dashboard →](https://your-app.onrender.com/dashboard)**
+## 🌐 Live URLs
+
+**☕ Customer Ordering Page**  
+https://brewco-1.onrender.com/
+
+**📊 Owner Dashboard**  
+https://brewco-1.onrender.com/dashboard
 
 ---
 
@@ -16,20 +21,20 @@
 
 | Page | Who uses it | What it does |
 |---|---|---|
-| `/` | Customer | Browse menu, add to cart, place order |
-| `/dashboard` | Owner | See live orders, update status, track revenue |
+| `/` | Customer | Browse menu, add items to cart, place an order |
+| `/dashboard` | Owner | View live orders, update status, track revenue |
 
-Orders appear on the dashboard **within 3 seconds** of being placed. No refresh needed.
+Orders show up on the dashboard automatically via polling.
 
 ---
 
 ## Stack
 
 - **Backend:** Node.js + Express
-- **Database:** PostgreSQL (auto-creates tables + seeds menu on first run)
-- **Frontend:** Vanilla HTML/CSS/JS — no framework, no build step
-- **Real-time:** Polling every 3 seconds
-- **Deploy:** Render (one service, everything together)
+- **Database:** PostgreSQL (Render)
+- **Frontend:** Vanilla HTML/CSS/JS (no framework, no build step)
+- **Real-time:** Polling
+- **Deploy:** Render (single web service)
 
 ---
 
@@ -41,8 +46,7 @@ cd brewco
 npm install
 cp .env.example .env   # add your DATABASE_URL
 npm run dev
-# Customer page:  http://localhost:3000
-# Owner dashboard: http://localhost:3000/dashboard
+
 ```
 
 ---
