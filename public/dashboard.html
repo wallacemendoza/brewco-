@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Brew & Co — Owner Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;700&family=DM+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --bg2: #161616;
+      --bg3: #1e1e1e;
+      --border: #2a2a2a;
+      --brown: #c8892a;
+      --amber: #f0b429;
+      --text: #f0ebe4;
+      --muted: #7a7068;
+      --green: #10b981;
+      --blue: #60a5fa;
+      --red: #f87171;
+      --purple: #a78bfa;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+    /* TOPBAR */
+    .topbar {
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      display: flex; justify-content: space-between; align-items: center;
+      height: 60px; position: sticky; top: 0; z-index: 10;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .topbar-left h1 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--brown); }
+    .live-pill {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--bg3); border: 1px solid var(--border);
+      padding: 4px 12px; border-radius: 20px; font-size: 12px; color: var(--muted);
+    }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .last-update { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+    .btn-customer {
+      background: var(--brown); color: white; border: none;
+      padding: 8px 16px; border-radius: 8px; font-size: 13px;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; text-decoration: none;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-customer:hover { background: var(--amber); }
+
+    /* STATS */
+    .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; padding: 20px 28px; }
+    .stat {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 20px; position: relative; overflow: hidden;
+    }
+    .stat::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+    .stat.amber::before { background: var(--amber); }
+    .stat.green::before { background: var(--green); }
+    .stat.blue::before  { background: var(--blue);  }
+    .stat.purple::before{ background: var(--purple);}
+    .stat label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+    .stat .val { font-size: 28px; font-weight: 700; margin: 6px 0 0; }
+    .stat .val.amber  { color: var(--amber); }
+    .stat .val.green  { color: var(--green); }
+    .stat .val.blue   { color: var(--blue);  }
+    .stat .val.purple { color: var(--purple);}
+
+    /* FILTER TABS */
+    .filters { padding: 0 28px 16px; display: flex; gap: 8px; }
+    .filter-btn {
+      padding: 7px 16px; border-radius: 20px;
+      border: 1px solid var(--border); background: none;
+      color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px;
+      cursor: pointer; transition: all .15s;
+    }
+    .filter-btn:hover { border-color: var(--brown); color: var(--text); }
+    .filter-btn.active { background: var(--brown); border-color: var(--brown); color: white; }
+
+    /* ORDERS GRID */
+    .orders-wrap { padding: 0 28px 28px; }
+    .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 14px; }
+    .no-orders { text-align: center; padding: 60px; color: var(--muted); font-size: 15px; }
+
+    .order-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px;
+      transition: border-color .2s;
+      animation: slideIn .25s ease;
+    }
+    @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .order-card.pending   { border-left: 3px solid var(--blue); }
+    .order-card.preparing { border-left: 3px solid var(--amber); }
+    .order-card.ready     { border-left: 3px solid var(--purple); }
+    .order-card.delivered { border-left: 3px solid var(--green); opacity: .65; }
+    .order-card.cancelled { border-left: 3px solid var(--red); opacity: .5; }
+
+    .order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .order-id { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+    .order-name { font-size: 16px; font-weight: 700; margin-top: 2px; }
+    .order-time { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+    .status-badge {
+      padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .status-badge.pending   { background: #60a5fa20; color: var(--blue); }
+    .status-badge.preparing { background: #f0b42920; color: var(--amber); }
+    .status-badge.ready     { background: #a78bfa20; color: var(--purple); }
+    .status-badge.delivered { background: #10b98120; color: var(--green); }
+    .status-badge.cancelled { background: #f8717120; color: var(--red); }
+
+    .order-items { margin-bottom: 14px; }
+    .order-item { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+    .order-item:last-child { border: none; }
+    .order-item-name { color: var(--text); }
+    .order-item-qty  { color: var(--muted); font-size: 12px; }
+
+    .order-note {
+      background: var(--bg3); border-radius: 6px; padding: 8px 10px;
+      font-size: 12px; color: var(--muted); margin-bottom: 12px;
+      font-style: italic;
+    }
+
+    .order-footer { display: flex; justify-content: space-between; align-items: center; }
+    .order-total { font-weight: 700; color: var(--amber); font-size: 15px; }
+
+    .action-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .action-btn {
+      padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border);
+      background: none; color: var(--muted); font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: all .15s;
+    }
+    .action-btn:hover { color: var(--text); border-color: var(--text); }
+    .action-btn.preparing { border-color: var(--amber); color: var(--amber); }
+    .action-btn.preparing:hover { background: var(--amber); color: #000; }
+    .action-btn.ready     { border-color: var(--purple); color: var(--purple); }
+    .action-btn.ready:hover { background: var(--purple); color: #fff; }
+    .action-btn.delivered { border-color: var(--green); color: var(--green); }
+    .action-btn.delivered:hover { background: var(--green); color: #fff; }
+    .action-btn.cancelled { border-color: var(--red); color: var(--red); }
+    .action-btn.cancelled:hover { background: var(--red); color: #fff; }
+
+    /* NEW ORDER TOAST */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--bg2); border: 1px solid var(--green);
+      border-radius: 12px; padding: 14px 20px;
+      font-size: 14px; color: var(--text);
+      display: none; animation: slideIn .3s ease;
+      z-index: 100;
+    }
+    .toast.show { display: block; }
+    .toast strong { color: var(--green); }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <h1>☕ Brew & Co</h1>
+    <div class="live-pill"><div class="live-dot"></div> Live</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <span class="last-update" id="lastUpdate">Updating...</span>
+    <a href="/" class="btn-customer">☕ Customer Page ↗</a>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat amber">
+    <label>Revenue Today</label>
+    <div class="val amber" id="statRevenue">$0.00</div>
+  </div>
+  <div class="stat blue">
+    <label>Pending</label>
+    <div class="val blue" id="statPending">0</div>
+  </div>
+  <div class="stat amber">
+    <label>Preparing</label>
+    <div class="val amber" id="statPreparing">0</div>
+  </div>
+  <div class="stat green">
+    <label>Delivered</label>
+    <div class="val green" id="statDelivered">0</div>
+  </div>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="setFilter('all', this)">All Orders</button>
+  <button class="filter-btn" onclick="setFilter('pending', this)">🔵 Pending</button>
+  <button class="filter-btn" onclick="setFilter('preparing', this)">🟡 Preparing</button>
+  <button class="filter-btn" onclick="setFilter('ready', this)">🟣 Ready</button>
+  <button class="filter-btn" onclick="setFilter('delivered', this)">🟢 Delivered</button>
+</div>
+
+<div class="orders-wrap">
+  <div class="orders-grid" id="ordersGrid">
+    <div class="no-orders">Loading orders...</div>
+  </div>
+</div>
+
+<div class="toast" id="toast">🔔 <strong>New order</strong> just came in!</div>
+
+<script>
+  let allOrders  = [];
+  let activeFilter = 'all';
+  let knownIds   = new Set();
+  let firstLoad  = true;
+
+  function setFilter(f, btn) {
+    activeFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderOrders();
+  }
+
+  function timeAgo(dateStr) {
+    const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+    if (diff < 60)  return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+    return new Date(dateStr).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  }
+
+  function actionButtons(order) {
+    const s = order.status;
+    let btns = '';
+    if (s === 'pending')   btns += `<button class="action-btn preparing" onclick="updateStatus(${order.id},'preparing')">Preparing</button>`;
+    if (s === 'preparing') btns += `<button class="action-btn ready"     onclick="updateStatus(${order.id},'ready')">Ready</button>`;
+    if (s === 'ready')     btns += `<button class="action-btn delivered"  onclick="updateStatus(${order.id},'delivered')">Delivered</button>`;
+    if (s !== 'delivered' && s !== 'cancelled')
+      btns += `<button class="action-btn cancelled" onclick="updateStatus(${order.id},'cancelled')">Cancel</button>`;
+    return btns;
+  }
+
+  function renderOrders() {
+    const filtered = activeFilter === 'all'
+      ? allOrders
+      : allOrders.filter(o => o.status === activeFilter);
+
+    const grid = document.getElementById('ordersGrid');
+    if (!filtered.length) {
+      grid.innerHTML = `<div class="no-orders">No ${activeFilter === 'all' ? '' : activeFilter} orders yet.</div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(o => {
+      const items = (o.items || []).filter(i => i && i.name);
+      return `
+      <div class="order-card ${o.status}">
+        <div class="order-header">
+          <div>
+            <div class="order-id">#${o.id} · ${timeAgo(o.created_at)}</div>
+            <div class="order-name">${o.customer}</div>
+          </div>
+          <span class="status-badge ${o.status}">${o.status}</span>
+        </div>
+        <div class="order-items">
+          ${items.map(i => `
+            <div class="order-item">
+              <span class="order-item-name">${i.name}</span>
+              <span class="order-item-qty">×${i.quantity}</span>
+            </div>
+          `).join('')}
+        </div>
+        ${o.note ? `<div class="order-note">📝 ${o.note}</div>` : ''}
+        <div class="order-footer">
+          <span class="order-total">$${parseFloat(o.total).toFixed(2)}</span>
+          <div class="action-btns">${actionButtons(o)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function updateStatus(id, status) {
+    await fetch(`/api/orders/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    fetchOrders();
+  }
+
+  async function fetchOrders() {
+    try {
+      const [oRes, sRes] = await Promise.all([fetch('/api/orders'), fetch('/api/stats')]);
+      const orders = await oRes.json();
+      const stats  = await sRes.json();
+
+      // Detect new orders
+      if (!firstLoad) {
+        orders.forEach(o => {
+          if (!knownIds.has(o.id)) showToast();
+        });
+      }
+      orders.forEach(o => knownIds.add(o.id));
+      firstLoad = false;
+
+      allOrders = orders;
+      renderOrders();
+
+      // Stats
+      document.getElementById('statRevenue').textContent  = '$' + parseFloat(stats.revenue_today).toFixed(2);
+      document.getElementById('statPending').textContent   = stats.pending;
+      document.getElementById('statPreparing').textContent = stats.preparing;
+      document.getElementById('statDelivered').textContent = stats.delivered;
+      document.getElementById('lastUpdate').textContent    = 'Updated ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    } catch(e) {
+      console.error('Fetch error:', e);
+    }
+  }
+
+  function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 4000);
+  }
+
+  fetchOrders();
+  setInterval(fetchOrders, 3000); // refresh every 3 seconds
+</script>
+</body>
+</html>
